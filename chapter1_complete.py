@@ -1,5 +1,6 @@
 import tkinter as tk
-
+from math import sqrt
+import numpy
 
 class GameObject(object):
     def __init__(self, canvas, item):
@@ -20,6 +21,7 @@ class Ball(GameObject):
     def __init__(self, canvas, x, y):
         self.radius = 10
         self.direction = [1, -1]
+        self.direction /= numpy.linalg.norm(self.direction)
         self.speed = 10
         item = canvas.create_oval(x-self.radius, y-self.radius,
                                   x+self.radius, y+self.radius,
@@ -38,24 +40,62 @@ class Ball(GameObject):
         self.move(x, y)
 
     def collide(self, game_objects):
-        coords = self.get_position()
-        x = (coords[0] + coords[2]) * 0.5
         if len(game_objects) > 1:
-            self.direction[1] *= -1
-        elif len(game_objects) == 1:
-            game_object = game_objects[0]
-            coords = game_object.get_position()
-            if x > coords[2]:
-                self.direction[0] = 1
-            elif x < coords[0]:
-                self.direction[0] = -1
+            box1 = game_objects[0].get_position()
+            box2 = game_objects[1].get_position()
+            if box1[0] == box2[0] or box1[2] == box2[2]:
+                self.direction[0] *= -1
             else:
                 self.direction[1] *= -1
+
+        elif len(game_objects) == 1:
+            self.center = [self.get_position()[0] + self.radius,
+                        self.get_position()[1] + self.radius]      
+            collide_point = []
+            collision_box = game_objects[0].get_position()
+            collision_box = [collision_box[0] - self.radius, collision_box[1] - self.radius,
+                            collision_box[2] + self.radius, collision_box[3] + self.radius]
+            for i in range(4):
+                if i%2 == 0:
+                    D = self.radius**2 - ((collision_box[i] - self.center[0])**2)
+                    if D > 0:
+                        a = self.center[1] + sqrt(D)
+                        b = self.center[1] - sqrt(D)
+                        if collision_box[1] < a < collision_box[3] and collision_box[1] < b < collision_box[3]:
+                            self.direction[0] *= -1
+                        elif collision_box[1] < a < collision_box[3]:
+                            collide_point.append([collision_box[i], a])
+                        elif collision_box[1] < b < collision_box[3]:
+                            collide_point.append([collision_box[i], b])
+
+                else:
+                    D = self.radius**2 - ((collision_box[i] - self.center[1])**2)
+                    if D > 0:
+                        a = self.center[0] + sqrt(D)
+                        b = self.center[0] - sqrt(D)
+                        if collision_box[0] < a < collision_box[2] and collision_box[0] < b < collision_box[2]:
+                            self.direction[1] *= -1   
+                        elif collision_box[0] < a < collision_box[2]:
+                            collide_point.append([a, collision_box[i]])
+                        elif collision_box[0] < b < collision_box[2]:
+                            collide_point.append([b, collision_box[i]])   
+
+            if len(collide_point) == 2:
+                normal = []
+                normal.append(self.center[0] - (collide_point[1][0] + collide_point[0][0])/2)
+                normal.append(self.center[1] - (collide_point[1][1] + collide_point[0][1])/2)
+                normal /= numpy.linalg.norm(normal)
+
+                dotpro = normal[0]*self.direction[0] + normal[1]*self.direction[1]
+                if dotpro < 0:
+                    bounce = []
+                    bounce.append(-2*dotpro*normal[0] + self.direction[0])
+                    bounce.append(-2*dotpro*normal[1] + self.direction[1])
+                    self.direction = bounce / numpy.linalg.norm(bounce)
 
         for game_object in game_objects:
             if isinstance(game_object, Brick):
                 game_object.hit()
-
 
 class Paddle(GameObject):
     def __init__(self, canvas, x, y):
