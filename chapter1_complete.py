@@ -59,15 +59,13 @@ class Ball(GameObject):
                 self.direction[1] *= -1
 
         elif len(game_objects) == 1:
-            self.center = [self.get_position()[0] + self.radius,
-                        self.get_position()[1] + self.radius]      
             collide_point = []
             collision_box = game_objects[0].get_position()
-            collision_box = [collision_box[0] - self.radius, collision_box[1] - self.radius,
-                            collision_box[2] + self.radius, collision_box[3] + self.radius]
+            collision_box = [collision_box[0] - self.width/2, collision_box[1] - self.height/2,
+                            collision_box[2] + self.width/2, collision_box[3] + self.height/2]
             for i in range(4):
                 if i%2 == 0:
-                    D = self.radius**2 - ((collision_box[i] - self.center[0])**2)
+                    D = self.width**2/4 - ((collision_box[i] - self.center[0])**2)
                     if D > 0:
                         a = self.center[1] + sqrt(D)
                         b = self.center[1] - sqrt(D)
@@ -79,7 +77,7 @@ class Ball(GameObject):
                             collide_point.append([collision_box[i], b])
 
                 else:
-                    D = self.radius**2 - ((collision_box[i] - self.center[1])**2)
+                    D = self.height**2/4 - ((collision_box[i] - self.center[1])**2)
                     if D > 0:
                         a = self.center[0] + sqrt(D)
                         b = self.center[0] - sqrt(D)
@@ -109,7 +107,7 @@ class Ball(GameObject):
 
 class Paddle(GameObject):
     def __init__(self, canvas, x, y):
-        self.width = 80
+        self.width = 800
         self.height = 10
         self.ball = None
         item = canvas.create_rectangle(x - self.width / 2,
