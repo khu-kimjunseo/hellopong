@@ -18,14 +18,22 @@ class GameObject(object):
 
 class Ball(GameObject):
     def __init__(self, canvas, x, y):
-        self.radius = 10
         self.direction = [1, -1]
-        self.speed = 10
-        item = canvas.create_oval(x-self.radius, y-self.radius,
-                                  x+self.radius, y+self.radius,
-                                  fill='white')
+        self.speed = 3
+        self.filename = tk.PhotoImage(file = "/Users/junseo/Desktop/2022-2학기/게임프로그래밍입문/실습/Ball/ball2.png")
+        item = canvas.create_image(x, y, anchor = tk.CENTER,
+                                  image = self.filename)
+        self.center = canvas.coords(item)
+        self.width = self.filename.width()
+        self.height = self.filename.height()
         super(Ball, self).__init__(canvas, item)
 
+    def get_position(self):
+        self.center = self.canvas.coords(self.item)
+        x = self.center[0]
+        y = self.center[1]
+        return [x-self.width/2, y-self.height/2, x+self.width/2, y+self.height/2]
+    
     def update(self):
         coords = self.get_position()
         width = self.canvas.winfo_width()
@@ -59,7 +67,7 @@ class Ball(GameObject):
 
 class Paddle(GameObject):
     def __init__(self, canvas, x, y):
-        self.width = 800
+        self.width = 80
         self.height = 10
         self.ball = None
         item = canvas.create_rectangle(x - self.width / 2,
@@ -186,7 +194,7 @@ class Game(tk.Frame):
                 self.after(1000, self.setup_game)
         else:
             self.ball.update()
-            self.after(50, self.game_loop)
+            self.after(10, self.game_loop)
 
     def check_collisions(self):
         ball_coords = self.ball.get_position()
