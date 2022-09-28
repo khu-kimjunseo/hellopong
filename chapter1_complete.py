@@ -1,4 +1,5 @@
 import tkinter as tk
+import random
 
 
 class GameObject(object):
@@ -116,6 +117,8 @@ class Brick(GameObject):
 class Game(tk.Frame):
     def __init__(self, master):
         super(Game, self).__init__(master)
+        self.text = None
+        self.level = 1
         self.lives = 3
         self.width = 610
         self.height = 400
@@ -129,18 +132,63 @@ class Game(tk.Frame):
         self.ball = None
         self.paddle = Paddle(self.canvas, self.width/2, 326)
         self.items[self.paddle.item] = self.paddle
-        for x in range(5, self.width - 5, 75):
-            self.add_brick(x + 37.5, 50, 2)
-            self.add_brick(x + 37.5, 70, 1)
-            self.add_brick(x + 37.5, 90, 1)
-
+        
         self.hud = None
-        self.setup_game()
+        self.setup_level()
         self.canvas.focus_set()
         self.canvas.bind('<Left>',
                          lambda _: self.paddle.move(-10))
         self.canvas.bind('<Right>',
                          lambda _: self.paddle.move(10))
+
+    def setup_level(self):
+        self.unbind('<space>')
+        self.canvas.delete(self.text)
+
+        if self.level == 1:
+            for x in range(5, self.width - 5, 75):
+                rand1 = random.randint(0, 9)
+                rand2 = random.randint(0, 9)
+                rand3 = random.randint(0, 9)
+                if rand1 in range(7):
+                    self.add_brick(x + 37.5, 50, 2)
+                if rand2 in range(7):
+                    self.add_brick(x + 37.5, 70, 1)
+                if rand3 in range(7):
+                    self.add_brick(x + 37.5, 90, 1)
+
+        elif self.level == 2:
+            for x in range(5, self.width - 5, 75):
+                rand1 = random.randint(0, 9)
+                rand2 = random.randint(0, 9)
+                rand3 = random.randint(0, 9)
+                if rand1 in range(8):
+                    self.add_brick(x + 37.5, 50, 3)
+                if rand2 in range(8):
+                    self.add_brick(x + 37.5, 70, 2)
+                if rand3 in range(8):
+                    self.add_brick(x + 37.5, 90, 1)
+
+        elif self.level == 3:
+            for x in range(5, self.width - 5, 75):
+                rand1 = random.randint(0, 9)
+                rand2 = random.randint(0, 9)
+                rand3 = random.randint(0, 9)
+                rand4 = random.randint(0, 9)
+                if rand1 in range(9):
+                    self.add_brick(x + 37.5, 50, 3)
+                if rand2 in range(9):
+                    self.add_brick(x + 37.5, 70, 3)
+                if rand3 in range(9):
+                    self.add_brick(x + 37.5, 90, 2)
+                if rand4 in range(9):
+                    self.add_brick(x + 37.5, 110, 1)
+        
+        self.add_ball()
+        self.update_lives_text()
+        self.text = self.draw_text(300, 200,
+                                    'Press Space to start')
+        self.canvas.bind('<space>', lambda _: self.start_game())
 
     def setup_game(self):
         self.add_ball()
@@ -167,9 +215,9 @@ class Game(tk.Frame):
                                        font=font)
 
     def update_lives_text(self):
-        text = 'Lives: %s' % self.lives
+        text = 'Lives: %s  Level: %s' % (self.lives, self.level)
         if self.hud is None:
-            self.hud = self.draw_text(50, 20, text, 15)
+            self.hud = self.draw_text(70, 20, text, 15)
         else:
             self.canvas.itemconfig(self.hud, text=text)
 
@@ -184,7 +232,12 @@ class Game(tk.Frame):
         num_bricks = len(self.canvas.find_withtag('brick'))
         if num_bricks == 0: 
             self.ball.speed = None
-            self.draw_text(300, 200, 'You win!')
+            if self.level == 3 :
+                self.draw_text(300, 200, 'You win!')
+            else:
+                self.level += 1
+                self.text = self.draw_text(300, 200, 'Press Space to start next level')
+                self.canvas.bind('<space>', lambda _: self.setup_level())
         elif self.ball.get_position()[3] >= self.height: 
             self.ball.speed = None
             self.lives -= 1
