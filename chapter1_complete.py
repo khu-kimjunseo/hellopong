@@ -20,7 +20,7 @@ class Ball(GameObject):
     def __init__(self, canvas, x, y):
         self.direction = [1, -1]
         self.speed = 3
-        self.filename = tk.PhotoImage(file = "/Users/junseo/Desktop/2022-2학기/게임프로그래밍입문/실습/Ball/ball2.png")
+        self.filename = tk.PhotoImage(file = 'ball2.png')
         item = canvas.create_image(x, y, anchor = tk.CENTER,
                                   image = self.filename)
         self.center = canvas.coords(item)
